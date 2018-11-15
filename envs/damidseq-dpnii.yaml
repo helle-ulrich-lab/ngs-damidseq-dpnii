@@ -1,0 +1,13 @@
+channels:
+- bioconda
+- conda-forge
+- defaults
+- r
+
+dependencies:
+- fastqc=0.11.8
+- trimmomatic=0.38
+- bowtie2=2.3.4.3
+- samtools=1.2
+- damidseq_pipeline=1.4
+- ucsc-bedgraphtobigwig=366
