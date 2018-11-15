@@ -73,8 +73,8 @@ rule fastqc_raw:
         out_dir = join(FASTQC_DIR, "raw/")
     log: join(LOG_DIR, "fastqc/raw/{sample}_{read}_fastqc.log")
     # message: """--- QC {sample}_{read} ---"""
-    conda:
-        "envs/damidseq-dpnii.yaml"
+    # conda:
+    #     "envs/damidseq-dpnii.yaml"
     shell:
         """
         fastqc \
@@ -97,8 +97,8 @@ rule adaptor_trimming_polishing_pe:
     log: join(LOG_DIR, "adaptor_trimming_polishing/{sample}_trimmomatic.log")
     #message: """--- Trimming ---""" #"""--- Trimming {sample} ---"""
     threads: CLUSTER["adaptor_trimming_polishing_pe"]["cpu"]
-    conda:
-        "envs/damidseq-dpnii.yaml"
+    # conda:
+    #     "envs/damidseq-dpnii.yaml"
     shell:
         """
         trimmomatic PE \
@@ -124,8 +124,8 @@ rule fastqc_trimmed:
         out_dir = join(FASTQC_DIR, "trimmed_polished/")
     log: join(LOG_DIR, "fastqc/trimmed_polished/{sample}_{read}.trimmed_polished_fastqc.log")
     # message: """--- QC trimmed and polished {sample}_{read} ---"""
-    conda:
-        "envs/damidseq-dpnii.yaml"
+    # conda:
+    #     "envs/damidseq-dpnii.yaml"
     shell:
         """
         fastqc \
@@ -145,8 +145,8 @@ rule mapping_bowtie2_pe:
     log: join(LOG_DIR, "mapping/{sample}_{exp}.mapping.log")
     # message: """--- Mapping {sample}_{exp} ---"""
     threads: CLUSTER["mapping_bowtie2_pe"]["cpu"]
-    conda:
-        "envs/damidseq-dpnii.yaml"
+    # conda:
+    #     "envs/damidseq-dpnii.yaml"
     shell:
         """
         bowtie2 \
@@ -167,8 +167,8 @@ rule filter_bam_mapq:
     threads: CLUSTER["filter_bam_mapq"]["cpu"]
     log: join(LOG_DIR, "bam_filtering/{sample}_{exp}.bam_filtering.log")
     # message: """--- Filtering {sample}_{exp} ---"""
-    conda:
-        "envs/damidseq-dpnii.yaml"
+    # conda:
+    #     "envs/damidseq-dpnii.yaml"
     shell:
         """
         samtools view -@ {threads} -bhu -q 30 {input} | samtools sort -@ {threads} -T {wildcards.sample}_{wildcards.exp} -O bam -> {output} 2> {log}
@@ -182,8 +182,8 @@ rule bam_index:
         join(MAPPED_DIR, "{exp}/", "{sample}.{type}.bam.bai")
     log: join(LOG_DIR, "bam_filtering/{sample}_{exp}_{type}.bam_filtering.log")
     # message: """--- Filtering {sample}_{exp}_{type} ---"""
-    conda:
-        "envs/damidseq-dpnii.yaml"
+    # conda:
+    #     "envs/damidseq-dpnii.yaml"
     shell: 
         """
         samtools index {input} 2> {log}
@@ -204,8 +204,8 @@ rule damidseq_analysis:
     log: join(LOG_DIR, "damidseq/{fusion}_{dam}_{exp}.damidseq.log")
     # message: """--- Damming {fusion} vs. {dam} for {exp} ---"""
     threads: CLUSTER["damidseq_analysis"]["cpu"]
-    conda:
-        "envs/damidseq-dpnii.yaml"
+    # conda:
+    #     "envs/damidseq-dpnii.yaml"
     shell:
         """
         cd {params.out_dir}
@@ -228,8 +228,8 @@ rule bedgraph_to_bigwig:
         chrom_sizes = config["chrom_sizes"]
     log: join(LOG_DIR, "bedgraph_conversion/{fusion}_{dam}_{exp}.bedgraph_conversion.log")
     # message: """--- Damming {fusion} vs. {dam} for {exp} ---"""
-    conda:
-        "envs/damidseq-dpnii.yaml"
+    # conda:
+    #     "envs/damidseq-dpnii.yaml"
     shell:
         """
         bedGraphToBigWig {input} {params.chrom_sizes} {output} 2> {log}
@@ -244,8 +244,8 @@ rule call_peaks:
     params:
         out_dir = TRACK_DIR
     # message: """--- Calling peaks {fusion} vs. {dam} for {exp} ---"""
-    conda:
-        "envs/damidseq-dpnii.yaml"
+    # conda:
+    #     "envs/damidseq-dpnii.yaml"
     shell:
         """
         cd {params.out_dir}
