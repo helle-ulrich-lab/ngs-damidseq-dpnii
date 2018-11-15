@@ -154,7 +154,7 @@ rule mapping_bowtie2_pe:
         -x {params.genome_index} \
         -1 {input.R1} \
         -2 {input.R2} | \
-        samtools view -@ {threads} -bhSu | \
+        samtools view -@ {threads} -bhSu - | \
         samtools sort -@ {threads} -T {wildcards.sample}_{wildcards.exp} -O bam - > {output} 2> {log}
         """
 
