@@ -171,7 +171,7 @@ rule filter_bam_mapq:
         "envs/damidseq-dpnii.yaml"
     shell:
         """
-        samtools view -@ {threads} -bhu -q 30 {input} | samtools sort -@ {threads} -T {wildcards.sample}_{wildcards.exp} -O bam -> {output}
+        samtools view -@ {threads} -bhu -q 30 {input} | samtools sort -@ {threads} -T {wildcards.sample}_{wildcards.exp} -O bam -> {output} 2> {log}
         """
 
 
@@ -186,7 +186,7 @@ rule bam_index:
         "envs/damidseq-dpnii.yaml"
     shell: 
         """
-        samtools index {input}
+        samtools index {input} 2> {log}
         """
 
 
@@ -232,7 +232,7 @@ rule bedgraph_to_bigwig:
         "envs/damidseq-dpnii.yaml"
     shell:
         """
-        bedGraphToBigWig {input} {params.chrom_sizes} {output}
+        bedGraphToBigWig {input} {params.chrom_sizes} {output} 2> {log}
         """
 
 rule call_peaks:
@@ -241,11 +241,14 @@ rule call_peaks:
     output:
         join(TRACK_DIR, "{fusion}-vs-{dam}.{exp}.bedgraph.gz")
     log: join(LOG_DIR, "peak_calling/{fusion}_{dam}_{exp}.peak_calling.log")
+    params:
+        out_dir = TRACK_DIR
     # message: """--- Calling peaks {fusion} vs. {dam} for {exp} ---"""
     conda:
         "envs/damidseq-dpnii.yaml"
     shell:
         """
-        find_peaks {input}
+        cd {params.out_dir}
+        find_peaks {input} 2> {log}
         gzip {input}
         """
