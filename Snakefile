@@ -75,11 +75,9 @@ rule fastqc_raw:
     # message: """--- QC {sample}_{read} ---"""
     shell:
         """
-        module load fastqc
         fastqc \
         --outdir={params.out_dir} \
         {input} 2> {log}
-        module unload fastqc
         """
 
 
@@ -99,7 +97,6 @@ rule adaptor_trimming_polishing_pe:
     threads: CLUSTER["adaptor_trimming_polishing_pe"]["cpu"]
     shell:
         """
-        module load trimmomatic
         trimmomatic PE \
         -threads {threads} \
         -phred33 \
@@ -111,7 +108,6 @@ rule adaptor_trimming_polishing_pe:
         TRAILING:28 \
         MINLEN:36 \
         2> {log}
-        module unload trimmomatic
         """
 
 
@@ -126,11 +122,9 @@ rule fastqc_trimmed:
     # message: """--- QC trimmed and polished {sample}_{read} ---"""
     shell:
         """
-        module load fastqc
         fastqc \
         --outdir={params.out_dir} \
         {input} 2> {log}
-        module unload fastqc
         """
 
 
@@ -147,7 +141,6 @@ rule mapping_bowtie2_pe:
     threads: CLUSTER["mapping_bowtie2_pe"]["cpu"]
     shell:
         """
-        module load bowtie2 samtools
         bowtie2 \
         -p {threads} \
         -x {params.genome_index} \
@@ -155,7 +148,6 @@ rule mapping_bowtie2_pe:
         -2 {input.R2} | \
         samtools view -@ {threads} -bhSu | \
         samtools sort -@ {threads} -T {wildcards.sample}_{wildcards.exp} -O bam - > {output} 2> {log}
-        module unload bowtie2 samtools
         """
 
 
@@ -169,9 +161,7 @@ rule filter_bam_mapq:
     # message: """--- Filtering {sample}_{exp} ---"""
     shell:
         """
-        module load samtools
         samtools view -@ {threads} -bhu -q 30 {input} | samtools sort -@ {threads} -T {wildcards.sample}_{wildcards.exp} -O bam -> {output}
-        module unload samtools
         """
 
 
@@ -184,9 +174,7 @@ rule bam_index:
     # message: """--- Filtering {sample}_{exp}_{type} ---"""
     shell: 
         """
-        module load samtools
         samtools index {input}
-        module unload samtools
         """
 
 
@@ -207,13 +195,11 @@ rule damidseq_analysis:
     shell:
         """
         cd {params.out_dir}
-        module load damidseq_pipeline
         damidseq_pipeline \
         --threads={threads} \
         --bowtie2_genome_dir={params.genome_index}  \
         --gatc_frag_file={params.gatc_file} \
         --dam="{input.dam}" "{input.fusion}"
-        module unload damidseq_pipeline
         mv pipeline*.log {log}
         mv {params.temp_bedgraph} {output}
         """
@@ -230,9 +216,7 @@ rule bedgraph_to_bigwig:
     # message: """--- Damming {fusion} vs. {dam} for {exp} ---"""
     shell:
         """
-        module load kentUtils
         bedGraphToBigWig {input} {params.chrom_sizes} {output}
-        module unload kentUtils
         """
 
 rule call_peaks:
@@ -244,8 +228,6 @@ rule call_peaks:
     # message: """--- Calling peaks {fusion} vs. {dam} for {exp} ---"""
     shell:
         """
-        module load damidseq_pipeline
         find_peaks {input}
         gzip {input}
-        module unload damidseq_pipeline
         """
