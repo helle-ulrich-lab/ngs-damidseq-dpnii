@@ -1,0 +1,70 @@
+__default__:
+    time: "01:00:00"
+    cpu: 1
+    mem-per-cpu: 4096M
+    queue: short
+    stdout: logs/cluster/{rule}_{wildcards.sample}.out
+    stderr: logs/cluster/{rule}_{wildcards.sample}.err
+
+fastqc_raw:
+    time: "01:00:00"
+    mem-per-cpu: 4096M
+    queue: short
+    stdout: logs/cluster/{rule}_{wildcards.sample}_{wildcards.read}.out
+    stderr: logs/cluster/{rule}_{wildcards.sample}_{wildcards.read}.err
+
+adaptor_trimming_polishing_pe:
+    time: "01:00:00"
+    cpu: 4
+    mem-per-cpu: 2048M
+    queue: long
+
+fastqc_trimmed:
+    time: "01:00:00"
+    cpu: 1
+    mem-per-cpu: 4096M
+    queue: short
+    stdout: logs/cluster/{rule}_{wildcards.sample}_{wildcards.read}.out
+    stderr: logs/cluster/{rule}_{wildcards.sample}_{wildcards.read}.err
+
+mapping_bowtie2_pe:
+    time: "08:00:00"
+    cpu: 4
+    mem-per-cpu: 4096M
+    queue: long
+
+filter_bam_mapq:
+    time: "02:00:00"
+    cpu: 4
+    mem-per-cpu: 4096M
+    queue: short
+
+bam_index:
+    time: "01:00:00"
+    cpu: 1
+    mem-per-cpu: 2048M
+    queue: short
+
+damidseq_analysis:
+    time: "04:00:00"
+    cpu: 1
+    mem-per-cpu: 16384M
+    queue: short
+    stdout: logs/cluster/{rule}_{wildcards.exp}.out
+    stderr: logs/cluster/{rule}_{wildcards.exp}.err
+
+bedgraph_to_bigwig:
+    time: 01:00:00
+    cpu: 1
+    mem-per-cpu: 4096M
+    queue: short
+    stdout: logs/cluster/{rule}_{wildcards.exp}.out
+    stderr: logs/cluster/{rule}_{wildcards.exp}.err
+
+call_peaks:
+    time: 04:00:00
+    cpu: 1
+    mem-per-cpu: 4096M
+    queue: short
+    stdout: logs/cluster/{rule}_{wildcards.exp}.out
+    stderr: logs/cluster/{rule}_{wildcards.exp}.err

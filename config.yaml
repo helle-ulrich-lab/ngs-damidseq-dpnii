@@ -1,0 +1,5 @@
+
+trimming_adaptors_fa_path: "/fsimb/common/tools/trimmomatic/0.36/adapters/NebNext.fa"
+bowtie2_genome_index_bashpath: "/fsimb/groups/imb-ulrichgr/genome_sequences/hg19/bowtie2_index/hg19"
+gatc_sites_file: "/fsimb/groups/imb-ulrichgr/genome_sequences/hg19/dpnII_sites_bins/hg19.GATC.gff.gz"
+chrom_sizes: "/fsimb/groups/imb-ulrichgr/genome_sequences/hg19/hg19.chrom.sizes"
