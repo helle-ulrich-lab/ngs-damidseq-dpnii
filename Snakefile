@@ -77,9 +77,14 @@ rule fastqc_raw:
     #     "envs/damidseq-dpnii.yaml"
     shell:
         """
+        . /home/niczilio/.bashrc
+        conda activate fastqc-0.11.8
+        
         fastqc \
         --outdir={params.out_dir} \
         {input} 2> {log}
+
+        conda deactivate
         """
 
 
@@ -101,6 +106,9 @@ rule adaptor_trimming_polishing_pe:
     #     "envs/damidseq-dpnii.yaml"
     shell:
         """
+        . /home/niczilio/.bashrc
+        conda activate trimmomatic-0.38
+
         trimmomatic PE \
         -threads {threads} \
         -phred33 \
@@ -112,6 +120,8 @@ rule adaptor_trimming_polishing_pe:
         TRAILING:28 \
         MINLEN:36 \
         2> {log}
+
+        conda deactivate
         """
 
 
@@ -128,9 +138,14 @@ rule fastqc_trimmed:
     #     "envs/damidseq-dpnii.yaml"
     shell:
         """
+        . /home/niczilio/.bashrc
+        conda activate fastqc-0.11.8
+
         fastqc \
         --outdir={params.out_dir} \
         {input} 2> {log}
+
+        conda deactivate
         """
 
 
@@ -149,13 +164,21 @@ rule mapping_bowtie2_pe:
     #     "envs/damidseq-dpnii.yaml"
     shell:
         """
+        . /home/niczilio/.bashrc
+        conda activate bowtie2-2.3.4.3
+
         bowtie2 \
         -p {threads} \
         -x {params.genome_index} \
         -1 {input.R1} \
         -2 {input.R2} | \
         samtools view -@ {threads} -bhSu - | \
-        samtools sort -@ {threads} -T {wildcards.sample}_{wildcards.exp} -O bam - > {output} 2> {log}
+        samtools sort -@ {threads} \
+            -T {wildcards.sample}_{wildcards.exp} \
+            -O bam - > {output} \
+            2> {log}
+
+        conda deactivate
         """
 
 
@@ -171,7 +194,19 @@ rule filter_bam_mapq:
     #     "envs/damidseq-dpnii.yaml"
     shell:
         """
-        samtools view -@ {threads} -bhu -q 30 {input} | samtools sort -@ {threads} -T {wildcards.sample}_{wildcards.exp} -O bam -> {output} 2> {log}
+        . /home/niczilio/.bashrc
+        conda activate bowtie2-2.3.4.3
+
+        samtools view \
+            -@ {threads} \
+            -bhu -q 30 {input} | \
+        samtools sort \
+            -@ {threads} \
+            -T {wildcards.sample}_{wildcards.exp} \
+            -O bam -> {output} \
+            2> {log}
+
+        conda deactivate
         """
 
 
@@ -186,7 +221,12 @@ rule bam_index:
     #     "envs/damidseq-dpnii.yaml"
     shell: 
         """
+        . /home/niczilio/.bashrc
+        conda activate bowtie2-2.3.4.3
+
         samtools index {input} 2> {log}
+
+        conda deactivate
         """
 
 
@@ -208,14 +248,48 @@ rule damidseq_analysis:
     #     "envs/damidseq-dpnii.yaml"
     shell:
         """
+        . /home/niczilio/.bashrc
+        conda activate damidseq_pipeline-1.4-2
+
         cd {params.out_dir}
         damidseq_pipeline \
         --threads={threads} \
-        --bowtie2_genome_dir={params.genome_index}  \
+        --bowtie2_genome_dir={params.genome_index} \
         --gatc_frag_file={params.gatc_file} \
         --dam="{input.dam}" "{input.fusion}"
         mv pipeline*.log {log}
         mv {params.temp_bedgraph} {output}
+
+        conda deactivate
+        """
+
+
+rule bam_to_bigwig:
+    input:
+        join(MAPPED_DIR, "{exp}/" , "{sample}.{type}.bam")
+    output:
+        join(TRACK_DIR, "{exp}/", "{sample}.{type}.bw")
+    threads: CLUSTER["bam_to_bigwig"]["cpu"]
+    params:
+        effective_genome_size = config["effective_genome_size"],
+    log: join(LOG_DIR, "bam_to_bigwig/{sample}_{exp}_{type}.bam_to_bigwig.log")
+    # message: """--- Filtering {sample}_{exp}_{type} ---"""
+    # conda:
+    #     "envs/damidseq-dpnii.yaml"
+    shell: 
+        """
+        . /home/niczilio/.bashrc
+        conda activate deeptools-3.1.2
+
+        bamCoverage \
+            -p {threads} \
+            --effectiveGenomeSize {params.effective_genome_size} \
+            --normalizeUsing BPM \
+            -b {input} \
+            -o {output} \
+            2> {log}
+
+        conda deactivate
         """
 
 
@@ -232,8 +306,14 @@ rule bedgraph_to_bigwig:
     #     "envs/damidseq-dpnii.yaml"
     shell:
         """
+        . /home/niczilio/.bashrc
+        conda activate bedgraphtobigwig-377-0
+        
         bedGraphToBigWig {input} {params.chrom_sizes} {output} 2> {log}
+
+        conda deactivate
         """
+
 
 rule call_peaks:
     input:
@@ -248,7 +328,14 @@ rule call_peaks:
     #     "envs/damidseq-dpnii.yaml"
     shell:
         """
+        . /home/niczilio/.bashrc
+        conda activate damidseq_pipeline-1.4-2
+
         cd {params.out_dir}
         find_peaks {input} 2> {log}
         gzip {input}
+
+        conda deactivate
         """
+
+# Run snakemake -j 999 -c 24 --cluster-config cluster.yaml --latency-wait 60 --cluster "sbatch -p {cluster.queue} -c {cluster.cpu}  -t {cluster.time}  -J '{rule}' -o {cluster.stdout} -e {cluster.stderr}"

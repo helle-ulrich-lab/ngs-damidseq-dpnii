@@ -53,6 +53,14 @@ damidseq_analysis:
     stdout: logs/cluster/{rule}_{wildcards.exp}.out
     stderr: logs/cluster/{rule}_{wildcards.exp}.err
 
+bam_to_bigwig:
+    time: 01:00:00
+    cpu: 4
+    mem-per-cpu: 2048M
+    queue: short
+    stdout: logs/cluster/{rule}_{wildcards.exp}.out
+    stderr: logs/cluster/{rule}_{wildcards.exp}.err
+
 bedgraph_to_bigwig:
     time: 01:00:00
     cpu: 1
